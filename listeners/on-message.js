@@ -27,60 +27,62 @@
 
 const fs = require('fs')
 const { hotImport } = require('hot-import')
-
-const { MediaMessage, Misc, log } = require('wechaty') 
+const {config}   = require('./../config');
+const { Message, Misc, log } = require('wechaty')
+const path = require('path');
 
 exports.default =  async function onMessage (message) {
   try {
+    console.log(`RECV: ${message}`)
+    if (message.self()) {
+      console.log('this message is sent by myself!')
+      return;
+     }
     const room      = message.room()
     const sender    = message.from()
     const content   = message.text()
-    const roomName  = room ? `[${await room.topic()}] ` : ''
+    const roomName  = room ? `${await room.topic()}` : ''
 
-    process.stdout.write(
-	`${roomName}<${sender.name()}>(${message.type()}:${message.typeSub()}): `)
+    process.stdout.write(`${roomName}<${sender.name()}>(${message.type()}:): `)
+    // const config = await hotImport('./../config.js')
+   
+    if(roomName&&roomName===config.fromRoomName){
+      console.log(`${roomName}`);
+      // if(message.type()===Message.Type.Audio){
+      //   await saveMediaFile(message);
+      // }
+      // const contact1 = await config.app.Contact.find({name: '萌桑～'});
+      // //const contacts = await config.app.Contact.findAll();
+      // await contact1.say('123');
+      // await message.forward(contact1);
 
-    if (message instanceof MediaMessage) {
-      saveMediaFile(message)
-      return
+      const roo = await config.app.Room.find({topic: config.fromRoomName});
+
+      await message.forward(roo);
+
     }
-
-    console.log(`${Misc.digestEmoji(message)}`)
-    // add an extra CR if too long
-    if (content.length > 80) console.log("")
-
-    const config = await hotImport('config.js')
-    // Hot import! Try to change the msgKW1&2 to 'ping' & 'pong'
-    // after the bot has already started!
-    if (content === config.msgKW1) {
-      await message.say(`${config.msgKW2}, thanks for ${config.msgKW1} me`)
-      log.info('Bot', `REPLY: ${config.msgKW2}`)
-    } else if (content === config.msgKW2) {
-      await sender.say('ok, ${config.msgKW2} me is welcome, too.')
-    } else if (/^hello/i.test(content)) {
-      return `How are you, ${sender.name()} from ${roomName}`
+    // const contact = await config.app.Contact.find({name: '萌桑～'});
+    // await message.forward(contact);
+    if (content =='ding'){
+      await message.say('yoyoyo12')
+      return;
     }
+    
+
+    
   } catch (e) {
     log.error('Bot', 'on(message) exception: %s' , e)
   }
 }
-
-async function saveMediaFile(message) {
-  const filename = message.filename()
-  console.log('IMAGE local filename: ' + filename)
-
-  const fileStream = fs.createWriteStream(filename)
-
-  process.stdout.write('saving...')
-  try {
-    const netStream = await message.readyStream()
-    netStream
-      .pipe(fileStream)
-      .on('close', _ => {
-        const stat = fs.statSync(filename)
-        console.log(', saved as ', filename, ' size: ', stat.size)
-      })
-  } catch (e) {
-    console.error('stream error:', e)
-  }
+async function saveMediaFile(msg) {
+  console.log(`RECV: ${msg}`)
+  const file = await msg.toFileBox()
+  const name = file.name
+  // const filename = './../audioFiles/'+name;
+  console.log('Save file to: ' + name)
+  await file.toFile(path.join(__dirname,'../audioFiles',name));
 }
+async function transmitAudioMsg(msg){
+
+}
+

@@ -3,7 +3,8 @@
 //==========================================================================
 //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 //vvvvv Customization Starts vvvvv
-export const config = {
+const config = {
+  app:null,
   db: { host: 'localhost', port: 27017, name: 'db' },
   redis:
   { default: { port: 6379 },
@@ -13,9 +14,11 @@ export const config = {
   friendEnabled: false,
   msgKW1: 'ding',
   msgKW2: 'dong',
+  fromRoomName:'小桔和小理',
+  toRoomName:'小桔和小理'
 }
 //^^^^^ Customization Ends ^^^^^
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 //==========================================================================
 
-export default config
+exports.config =  config
